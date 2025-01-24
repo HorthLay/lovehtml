@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favorites Selection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .gradient-bg {
+      background: linear-gradient(to right, #ffafbd, #ffc3a0);
+    }
+
+    .hover-grow:hover {
+      transform: scale(1.05);
+      transition: all 0.3s ease;
+    }
+
+    /* Pop-up animation for images */
+    .pop-up {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: popUp 0.6s forwards;
+    }
+
+    @keyframes popUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* For fade-in transition between pop-ups */
+    .fade {
+      opacity: 0;
+      animation: fadeIn 1s forwards;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* Modal styling */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="gradient-bg h-screen flex items-center justify-center">
+  <div id="app" class="w-full max-w-lg h-[90%] p-4 bg-white rounded-lg shadow-lg flex flex-col items-center">
+    <h1 class="text-2xl font-bold text-[#ff6b6b] mb-4">Select Your Favorites</h1>
+
+    <!-- Step Description -->
+    <h2 id="step-title" class="text-lg font-semibold text-gray-700 mb-4">Step 1: Select Your Favorite Food</h2>
+
+    <!-- Selection Grid -->
+    <div id="selection-grid" class="grid grid-cols-3 gap-4">
+      <!-- Images for selection -->
+      <img src="./images/pizza.jpg" alt="Pizza" data-type="food"
+        class="rounded-lg hover-grow h-[150px] w-[150px] object-cover cursor-pointer">
+      <img src="./images/sushi.jpg" alt="Sushi" data-type="food"
+        class="rounded-lg hover-grow h-[150px] w-[150px] object-cover cursor-pointer">
+      <img src="./images/icecream.jpg" alt="Ice Cream" data-type="food"
+        class="rounded-lg hover-grow h-[150px] w-[150px] object-cover cursor-pointer">
+    </div>
+
+    <!-- Result Display -->
+    <div id="result-display" class="hidden mt-6 text-center">
+      <p>I LOVE YOU ANYA!❤️</p>
+      <p>❤️Tgei Valentines Day B tenh in rub ng mg ❤️</p>
+      <img src="./images/image7.gif" alt="" width="100" style="align-items: center; margin: 0 auto;">
+      <h2 class="text-lg font-semibold text-gray-700">Your Favorites:</h2>
+      <div id="result-grid" class="grid grid-cols-3 gap-4 mt-4"></div>
+    </div>
+  </div>
+
+  <!-- Modal for Cat Popup -->
+  <div id="cat-modal" class="modal">
+    <div class="modal-content cat-popup">
+      <span id="close-modal" class="modal-close">&times;</span>
+      <img src="./images/image3.gif" alt="Cat" class="w-full">
+      <p class="font-bold text-xl mt-2">chop khg na beb 🐱</p>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 1; // Track the current step
+    const userSelections = {}; // Store selections
+
+    // Get references to DOM elements
+    const stepTitle = document.getElementById("step-title");
+    const selectionGrid = document.getElementById("selection-grid");
+    const resultDisplay = document.getElementById("result-display");
+    const resultGrid = document.getElementById("result-grid");
+    const catModal = document.getElementById("cat-modal");
+    const closeModal = document.getElementById("close-modal");
+
+    // Options for each step
+    const steps = [
+      { type: "food", title: "Step 1: Select Your Favorite Food" },
+      { type: "anime", title: "Step 2: Select Your Favorite Anime" },
+      { type: "phone", title: "Step 3: Select Your Favorite Phone" },
+      { type: "doll", title: "Step 4: Select Your Favorite Doll" },
+    ];
+
+    // Function to load the current step
+    function loadStep() {
+      const step = steps[currentStep - 1];
+      stepTitle.innerText = step.title;
+
+      // Clear existing selections
+      selectionGrid.innerHTML = "";
+
+      // Add images for the current step
+      const images = {
+        food: ["pizza.png", "proheat.png", "burger.png"],
+        anime: ["onepiece.png", "naruto.png", "hxh.png"],
+        phone: ["ip1.png", "p1.png", "ip14.jpg"],
+        doll: ["korumi.png", "kitty.png", "baby.png"],
+      };
+
+      images[step.type].forEach((image) => {
+        const img = document.createElement("img");
+        img.src = `./images/${image}`;
+        img.alt = image.split(".")[0];
+        img.className =
+          "rounded-lg hover-grow h-[150px] w-[150px] object-cover cursor-pointer";
+        img.addEventListener("click", () => handleSelection(step.type, image));
+        selectionGrid.appendChild(img);
+      });
+    }
+
+    // Function to handle a selection
+    function handleSelection(type, choice) {
+      userSelections[type] = choice;
+
+      if (currentStep < steps.length) {
+        currentStep++; // Move to the next step
+        loadStep(); // Load the next step
+      } else {
+        displayResults(); // Display results at the end
+      }
+    }
+
+    // Function to display results with a pop-up animation after 5 seconds
+    function displayResults() {
+      stepTitle.classList.add("hidden");
+      selectionGrid.classList.add("hidden");
+
+      // Show result display
+      resultDisplay.classList.remove("hidden");
+
+      // Wait for 1 second before displaying the final images with pop-up effect
+      setTimeout(() => {
+        resultGrid.innerHTML = ` 
+          <div class="pop-up fade">
+            <h3 class="font-bold text-gray-700">Food</h3>
+            <img src="./images/${userSelections.food}" alt="Food" class="rounded-lg h-[150px] w-[150px] object-cover">
+          </div>
+          <div class="pop-up fade">
+            <h3 class="font-bold text-gray-700">Anime</h3>
+            <img src="./images/${userSelections.anime}" alt="Anime" class="rounded-lg h-[150px] w-[150px] object-cover">
+          </div>
+          <div class="pop-up fade">
+            <h3 class="font-bold text-gray-700">Phone</h3>
+            <img src="./images/${userSelections.phone}" alt="Phone" class="rounded-lg h-[150px] w-[150px] object-cover">
+          </div>
+          <div class="pop-up fade">
+            <h3 class="font-bold text-gray-700">Doll</h3>
+            <img src="./images/${userSelections.doll}" alt="Doll" class="rounded-lg h-[150px] w-[150px] object-cover">
+          </div>
+        `;
+
+        // Display the cat modal after 2 seconds
+        setTimeout(() => {
+          catModal.style.display = "flex";
+        
+          // Close cat modal after 3 seconds and show "My beautiful girl" image only
+          setTimeout(() => {
+            catModal.style.display = "none";
+        
+            // Hide previous images and only show "My Beautiful Girl" image
+            resultGrid.innerHTML = `
+           <div class="pop-up fade">
+            <h3 class="font-bold text-gray-700">Beautiful Girl</h3>
+            <img src="./images/myanya2.jpg" alt="Phone" class="rounded-lg h-[150px] w-[150px] object-cover">
+          </div>
+           <div class="pop-up fade">
+   <h3 class="font-bold text-gray-700">My Cutie Girl</h3>
+            <img src="./images/myanaya.jpg" alt="Phone" class="rounded-lg h-[150px] w-[150px] object-cover">
+            </div>
+
+             <div class="pop-up fade">
+   <h3 class="font-bold text-gray-700">My Future</h3>
+            <img src="./images/anya3.jpg" alt="Phone" class="rounded-lg h-[150px] w-[150px] object-cover">
+            </div>
+
+             
+            <div class="pop-up fade">
+            <img src="./images/sky.jpg" alt="Phone" class="rounded-lg h-[150px] w-[150px] object-cover">
+            </div>
+
+              <div class="pop-up fade">
+            <img src="./images/sky1.jpg" alt="Phone" class="rounded-lg h-[150px] w-[150px] object-cover">
+            </div>
+
+
+             <div class="pop-up fade">
+            <img src="./images/sky2.jpg" alt="Phone" class="rounded-lg h-[150px] w-[150px] object-cover">
+            </div>
+            
+            
+            
+            `;  
+          }, 3000);
+        }, 2000);
+      }, 1000);
+    }
+
+    // Function to close modal
+    closeModal.addEventListener("click", () => {
+      catModal.style.display = "none";
+    });
+
+    // Load the first step
+    loadStep();
+  </script>
+</body>
+</html>
